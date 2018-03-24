@@ -1,0 +1,7 @@
+This contains test code for picoboot. A tiny bootloader for microcontrollers.
+Actually this is just me experimenting with linking concepts and trying to
+build the smallest, featureless, most hacky 'bootloader' possible. Don't pay
+attention to this.
+
+Status:
+Obviously, not much for now.
