@@ -5,3 +5,16 @@ attention to this.
 
 Status:
 Obviously, not much for now.
+
+How to Build this:
+You need the following tools:
+* Ninja-build. The project only supports ninja (alas, there's NO makefile)
+* arm-none-eabi toolchain is used by build.ninja.
+* Any version of these tools will do(I guess).
+There are some external dependencies, such as:
+  * The STM32 Standard Peripheral Library(SPL) and CMSIS.
+  * A linker script for the board at hand(stm32f103rb for now).
+  * Read the build.ninja file to know where to place the dependencies.
+
+Build using ninja:
+$ ninja

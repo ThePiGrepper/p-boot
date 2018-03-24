@@ -1,0 +1,71 @@
+#project specific variables
+#external libraries
+stlib = ../../STM32F10x_StdPeriph_Lib
+project_name = p-boot
+
+#ninja make configuration
+builddir = ../obj
+tool = arm-none-eabi-gcc
+cflags = -mcpu=cortex-m3 -mlittle-endian -mthumb
+deflst = -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER
+incdir =  -I./ $
+          -I./include $
+          -I$stlib/CMSIS/Core $
+          -I$stlib/CMSIS/Device $
+          -I$stlib/STM32F10x_StdPeriph_Driver/inc $
+
+cscript = -T../../linker_scripts/stm32f10x_md.ld
+
+rule OBJCOPY
+  command = arm-none-eabi-objcopy -Oihex $in $out && arm-none-eabi-size $in
+  description = Creating $out hexfile
+
+rule CC
+  depfile = $out.d
+  deps = gcc
+  command = $tool -MMD -MF $out.d  -g -Os -Wall -fdata-sections -ffunction-sections $cflags $incdir $deflst -c $in -o $out
+  description = Compiling $in
+
+rule CLINK
+  command = $tool -g $cflags $deflst $cscript -Wl,--gc-sections $in -o $out
+  description = Linking $out
+
+build $builddir/main.o: CC main.c
+build $builddir/stm32f10x_it.o: CC stm32f10x_it.c
+build $builddir/system_stm32f10x.o: CC system_stm32f10x.c
+#build $builddir/system_stm32f10x.o: CC $stlib/CMSIS/Device/system_stm32f10x.c
+build $builddir/startup_stm32f10x_md.o: CC $stlib/CMSIS/Device/startup/gcc_ride7/startup_stm32f10x_md.s
+build $builddir/misc.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/misc.c
+build $builddir/stm32f10x_exti.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_exti.c
+build $builddir/stm32f10x_flash.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_flash.c
+build $builddir/stm32f10x_rcc.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_rcc.c
+build $builddir/stm32f10x_gpio.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_gpio.c
+#build $builddir/stm32f10x_dac.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_dac.c
+#build $builddir/stm32f10x_rtc.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_rtc.c
+#build $builddir/stm32f10x_adc.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_adc.c
+#build $builddir/stm32f10x_dbgmcu.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_dbgmcu.c
+#build $builddir/stm32f10x_sdio.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_sdio.c
+#build $builddir/stm32f10x_can.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_can.c
+#build $builddir/stm32f10x_spi.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_spi.c
+#build $builddir/stm32f10x_crc.o: CC stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_crc.c
+#build $builddir/stm32f10x_dma.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_dma.c
+#build $builddir/stm32f10x_i2c.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_i2c.c
+#build $builddir/stm32f10x_iwdg.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_iwdg.c
+#build $builddir/stm32f10x_tim.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_tim.c
+#build $builddir/stm32f10x_pwr.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_pwr.c
+#build $builddir/stm32f10x_usart.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_usart.c
+#build $builddir/stm32f10x_fsmc.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_fsmc.c
+#build $builddir/stm32f10x_wwdg.o: CC $stlib/STM32F10x_StdPeriph_Driver/src/stm32f10x_wwdg.c
+
+build $builddir/$project_name.elf: CLINK $builddir/main.o $
+                                      $builddir/stm32f10x_it.o $
+                                      $builddir/system_stm32f10x.o $
+                                      $builddir/startup_stm32f10x_md.o $
+                                      $builddir/misc.o $
+                                      $builddir/stm32f10x_exti.o $
+                                      $builddir/stm32f10x_flash.o $
+                                      $builddir/stm32f10x_rcc.o $
+                                      $builddir/stm32f10x_gpio.o
+
+build $builddir/$project_name.hex: OBJCOPY $builddir/$project_name.elf
+default $builddir/$project_name.hex
